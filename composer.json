@@ -12,7 +12,7 @@
         "mime",
         "parser"
     ],
-    "homepage": "https://github.com/JhumanJ/email-parser",
+    "homepage": "https://github.com/JhumanJ/php-email-parser",
     "authors": [
         {
             "name": "Julien Nahum",
@@ -58,7 +58,7 @@
         "sort-packages": true
     },
     "support": {
-        "issues": "https://github.com/JhumanJ/email-parser/issues",
-        "source": "https://github.com/JhumanJ/email-parser"
+        "issues": "https://github.com/JhumanJ/php-email-parser/issues",
+        "source": "https://github.com/JhumanJ/php-email-parser"
     }
 }

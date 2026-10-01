@@ -1,6 +1,6 @@
 # PHP Email Parser
 
-[![CI](https://github.com/JhumanJ/email-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/JhumanJ/email-parser/actions/workflows/ci.yml)
+[![CI](https://github.com/JhumanJ/php-email-parser/actions/workflows/ci.yml/badge.svg)](https://github.com/JhumanJ/php-email-parser/actions/workflows/ci.yml)
 [![Latest version](https://img.shields.io/packagist/v/jhumanj/email-parser.svg)](https://packagist.org/packages/jhumanj/email-parser)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
