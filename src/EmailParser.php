@@ -53,6 +53,6 @@ final class EmailParser
             $bytes .= $chunk;
             ParseContext::limit(strlen($bytes), $this->options->maxInputBytes, 'Input bytes');
         }
-        return $this->parse($bytes,$format);
+        return $this->parse($bytes, $format);
     }
 }

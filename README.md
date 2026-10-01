@@ -12,7 +12,7 @@ Read **EML and Outlook MSG** through one typed PHP API. Extract recipients, text
 composer require jhumanj/email-parser
 ```
 
-Requires **64-bit PHP 8.2+**, `mbstring` and `iconv`. Composer installs ZBateson Mail Mime Parser for RFC/MIME parsing and Symfony Mime for EML serialization. MSG/CFB and compressed RTF are implemented in this package; no Python, Outlook, COM, PEAR OLE or Swiftmailer runtime is required.
+Requires **64-bit PHP 8.2+**, `mbstring` and `iconv`. Composer installs ZBateson Mail Mime Parser 3.0.9+ for RFC/MIME parsing and Symfony Mime for EML serialization. MSG/CFB and compressed RTF are implemented in this package; no Python, Outlook, COM, PEAR OLE or Swiftmailer runtime is required.
 
 ## Parse an email
 
@@ -124,7 +124,7 @@ composer audit
 python3 tests/Support/generate-fixtures.py # optional; original fixtures only
 ```
 
-Tests use PHPUnit directly with no Laravel bootstrap. CI tests PHP 8.2–8.5 and a compatibility job using ZBateson 2.x / Symfony 6.4. The test suite was committed before implementation and covers both formats, Unicode/ANSI/RTF, embedded messages, exact attachment bytes, round trips, resource limits and malformed CFB inputs.
+Tests use PHPUnit directly with no Laravel bootstrap. CI tests PHP 8.2–8.5 and a compatibility job using ZBateson 3.0.9 / Symfony 6.4. The test suite was committed before implementation and covers both formats, Unicode/ANSI/RTF, embedded messages, exact attachment bytes, round trips, resource limits and malformed CFB inputs.
 
 See [fixture provenance](tests/Fixtures/README.md), [implementation references](docs/REFERENCES.md), [contribution guidelines](CONTRIBUTING.md) and [security reporting](SECURITY.md).
 

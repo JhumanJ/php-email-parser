@@ -223,7 +223,7 @@ final class CompoundFile
     }
     public static function u32(string $bytes, int $offset): int
     {
-        return unpack('V',substr($bytes,$offset,4))[1];
+        return unpack('V', substr($bytes, $offset, 4))[1];
     }
     private function invalid(string $message): never
     {
