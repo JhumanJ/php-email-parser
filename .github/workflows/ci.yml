@@ -25,11 +25,13 @@ jobs:
           extensions: mbstring, iconv
           coverage: none
           tools: composer:v2
-      - name: Select minimum supported MIME dependency
-        if: matrix.dependencies == 'minimum-mime'
-        run: composer require 'zbateson/mail-mime-parser:3.0.9' 'symfony/mime:^6.4' --no-update --no-interaction
       - run: composer validate --strict
-      - run: composer update --prefer-dist --no-interaction --no-progress
+      - name: Install latest dependencies
+        if: matrix.dependencies == 'latest'
+        run: composer update --prefer-dist --no-interaction --no-progress
+      - name: Install minimum supported MIME dependency
+        if: matrix.dependencies == 'minimum-mime'
+        run: composer update --with 'zbateson/mail-mime-parser:3.0.9' --with 'symfony/mime:^6.4' --prefer-dist --no-interaction --no-progress
       - run: composer check
       - run: composer audit
       - name: Verify original fixtures are reproducible
