@@ -158,6 +158,27 @@ def main():
     (OUT/'mini-fat-cycle.msg').write_bytes(broken)
     broken=bytearray(data); offset=(dirid+1)*512+76; broken[offset:offset+4]=pack('<I',0)
     (OUT/'directory-cycle.msg').write_bytes(broken)
+    big=basic(); big['__attach_version1.0_#00000000']=properties({0x3707:'large.bin',0x370e:'application/octet-stream'},{0x3701:bytes(range(256))*40},{0x3705:(3,1)},'other')
+    (OUT/'regular-sectors.msg').write_bytes(cfb(big)); (OUT/'regular-sectors-v4.msg').write_bytes(cfb(big,4))
+    difat=bytearray(data); new_sector=len(data)//512-1
+    difat[68:76]=pack('<II',new_sector,1); difat[76:512]=pack('<I',FREE)*109
+    difat.extend(pack('<I',fatid)+pack('<I',FREE)*126+pack('<I',END))
+    difat[(fatid+1)*512+new_sector*4:(fatid+1)*512+new_sector*4+4]=pack('<I',0xfffffffc)
+    (OUT/'difat.msg').write_bytes(difat)
+    for name,body in [('rtf-utf8.msg','{\\rtf1\\ansi\\ansicpg65001 Bonjour été}'.encode()),('rtf-sjis.msg',br"{\rtf1\ansi\ansicpg932 \'93\'fa\'96\'7b}"),('rtf-unicode.msg',br'{\rtf1\ansi Smile \u-10179?\u-8704?}')]:
+        (OUT/name).write_bytes(cfb(properties({0x0037:name},{0x1009:rtf(body)})))
+    # Literal-free prefix reference at dictionary offset 0, then literals and a termination reference.
+    body=br'{\rtf1 Hi}'; payload=b'\x01\x00\x04'+b' Hi}'+b'\x00'
+    # Tokens: reference length 6 then four literal bytes; final unused bytes are omitted.
+    payload=b'\x01\x00\x04'+b' Hi}'
+    crc=0
+    for byte in payload:
+        crc ^= byte
+        for _ in range(8): crc=(crc>>1)^(0xedb88320 if crc&1 else 0)
+    compressed=pack('<IIII',len(payload)+12,len(body),0x75465a4c,crc)+payload
+    (OUT/'rtf-reference.msg').write_bytes(cfb(properties({0x0037:'reference'},{0x1009:compressed})))
+    unknown=properties({0x0037:'Unknown code page',0x1000:'Readable'},fixed={0x3ffd:(3,99999)})
+    (OUT/'unknown-code-page.msg').write_bytes(cfb(unknown))
     (OUT/'empty.eml').write_bytes(b''); (OUT/'garbage.eml').write_bytes(b'not an email')
 
 if __name__=='__main__': main()

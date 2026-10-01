@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace JhumanJ\EmailParser\Tests;
@@ -45,8 +46,11 @@ final class ParserTest extends TestCase
         self::assertSame(Format::MSG, $parser->parse(file_get_contents(__DIR__.'/Fixtures/basic.msg'))->message->format);
         self::assertSame(Format::EML, $parser->parse(file_get_contents(__DIR__.'/Fixtures/basic.eml'))->message->format);
         $stream = fopen(__DIR__.'/Fixtures/basic.msg', 'rb');
-        try { self::assertSame('Facture été', $parser->parseStream($stream)->message->subject); }
-        finally { fclose($stream); }
+        try {
+            self::assertSame('Facture été', $parser->parseStream($stream)->message->subject);
+        } finally {
+            fclose($stream);
+        }
     }
 
     public function testAnsiMessageUsesItsDeclaredCodePage(): void
@@ -108,9 +112,15 @@ final class ParserTest extends TestCase
     public function testAttachmentStreamsAreIndependentAndPreserveBytes(): void
     {
         $attachment = (new EmailParser())->parseFile(__DIR__.'/Fixtures/basic.msg')->message->attachments[0];
-        $a = $attachment->openStream(); $b = $attachment->openStream();
-        try { fread($a, 5); self::assertSame($attachment->content(), stream_get_contents($b)); }
-        finally { fclose($a); fclose($b); }
+        $a = $attachment->openStream();
+        $b = $attachment->openStream();
+        try {
+            fread($a, 5);
+            self::assertSame($attachment->content(), stream_get_contents($b));
+        } finally {
+            fclose($a);
+            fclose($b);
+        }
     }
 
     public function testRepeatedHeadersArePreserved(): void
@@ -124,13 +134,13 @@ final class ParserTest extends TestCase
         $result = (new EmailParser())->parseFile(__DIR__.'/Fixtures/no-body.msg');
         self::assertNull($result->message->textBody);
         self::assertCount(2, $result->message->attachments);
-        self::assertContains('missing_body', array_map(fn($warning) => $warning->code, $result->warnings));
+        self::assertContains('missing_body', array_map(fn ($warning) => $warning->code, $result->warnings));
     }
 
     public function testUnsupportedAttachmentProducesAWarningOrFailsInStrictMode(): void
     {
         $result = (new EmailParser())->parseFile(__DIR__.'/Fixtures/unsupported-attachment.msg');
-        self::assertContains('unsupported_attachment', array_map(fn($warning) => $warning->code, $result->warnings));
+        self::assertContains('unsupported_attachment', array_map(fn ($warning) => $warning->code, $result->warnings));
         $this->expectException(InvalidEmailException::class);
         (new EmailParser(new ParseOptions(strict: true)))->parseFile(__DIR__.'/Fixtures/unsupported-attachment.msg');
     }
@@ -144,7 +154,7 @@ final class ParserTest extends TestCase
 
     public static function invalidFiles(): array
     {
-        return array_map(fn($file) => [$file], ['empty.eml','garbage.eml','truncated.msg','fat-cycle.msg','mini-fat-cycle.msg','directory-cycle.msg','bad-rtf-crc.msg']);
+        return array_map(fn ($file) => [$file], ['empty.eml','garbage.eml','truncated.msg','fat-cycle.msg','mini-fat-cycle.msg','directory-cycle.msg','bad-rtf-crc.msg']);
     }
 
     #[DataProvider('limits')]
@@ -178,7 +188,7 @@ final class ParserTest extends TestCase
         self::assertSame("Testing Manuel Lemos' MIME E-mail composing and sending PHP class: HTML message", $email->subject);
         self::assertSame('<20050430192829.0489.mlemos@acm.org>', $email->messageId);
         self::assertCount(3, $email->attachments);
-        $attachments = array_column(array_map(fn($a) => ['name'=>$a->filename, 'data'=>$a->content()], $email->attachments), 'data', 'name');
+        $attachments = array_column(array_map(fn ($a) => ['name' => $a->filename, 'data' => $a->content()], $email->attachments), 'data', 'name');
         self::assertSame('This is just a plain text attachment file named attachment.txt .', $attachments['attachment.txt']);
         self::assertStringContainsString('Hello Manuel', $email->textBody ?? '');
     }

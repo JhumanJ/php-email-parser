@@ -3,20 +3,62 @@
     "description": "Framework-independent EML and Outlook MSG parsing with one typed PHP API.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["email", "eml", "msg", "outlook", "mapi", "mime", "parser"],
+    "keywords": [
+        "email",
+        "eml",
+        "msg",
+        "outlook",
+        "mapi",
+        "mime",
+        "parser"
+    ],
     "homepage": "https://github.com/JhumanJ/email-parser",
-    "authors": [{"name": "Julien Nahum", "homepage": "https://github.com/JhumanJ"}],
+    "authors": [
+        {
+            "name": "Julien Nahum",
+            "homepage": "https://github.com/JhumanJ"
+        }
+    ],
     "require": {
         "php": "^8.2",
-        "ext-mbstring": "*",
         "ext-iconv": "*",
+        "ext-mbstring": "*",
+        "egulias/email-validator": "^4.0",
+        "symfony/mime": "^6.4 || ^7.0 || ^8.0",
         "zbateson/mail-mime-parser": "^2.4 || ^3.0",
-        "symfony/mime": "^6.4 || ^7.0 || ^8.0"
+        "php-64bit": "^8.2"
     },
-    "require-dev": {"phpunit/phpunit": "^11.5", "phpstan/phpstan": "^2.1", "friendsofphp/php-cs-fixer": "^3.0"},
-    "autoload": {"psr-4": {"JhumanJ\\EmailParser\\": "src/"}},
-    "autoload-dev": {"psr-4": {"JhumanJ\\EmailParser\\Tests\\": "tests/"}},
-    "scripts": {"test": "phpunit", "analyse": "phpstan analyse --memory-limit=512M", "format": "php-cs-fixer fix", "lint": "php-cs-fixer fix --dry-run --diff", "check": ["@test", "@analyse", "@lint"]},
-    "config": {"sort-packages": true},
-    "support": {"issues": "https://github.com/JhumanJ/email-parser/issues", "source": "https://github.com/JhumanJ/email-parser"}
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.5",
+        "phpstan/phpstan": "^2.1",
+        "friendsofphp/php-cs-fixer": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "JhumanJ\\EmailParser\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JhumanJ\\EmailParser\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse --memory-limit=512M",
+        "format": "php-cs-fixer fix",
+        "lint": "php-cs-fixer fix --dry-run --diff",
+        "check": [
+            "@test",
+            "@analyse",
+            "@lint"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "support": {
+        "issues": "https://github.com/JhumanJ/email-parser/issues",
+        "source": "https://github.com/JhumanJ/email-parser"
+    }
 }
