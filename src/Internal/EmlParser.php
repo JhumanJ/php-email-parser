@@ -66,7 +66,12 @@ final class EmlParser
                 }
             }
         };
-        $walk($message, 0);
+        try {
+            $walk($message, 0);
+        } finally {
+            // Break the recursive closure's reference to itself, including on errors.
+            $walk = null;
+        }
         if ($content->text === null && $content->html !== null) {
             $content->text = RtfDecoder::htmlText($content->html);
             $context->body($content->text);

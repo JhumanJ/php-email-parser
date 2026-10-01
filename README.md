@@ -97,7 +97,7 @@ try {
 | `maxDirectoryEntries` | 10,000 | CFB directory records |
 | `maxMimeParts` | 1,000 | Aggregate MIME parts |
 
-CFB chains and directory trees are checked for cycles and invalid indexes. RTF decompression verifies its size and checksum. MIME container depth is capped at 64 and RTF group depth at 256. Input and output objects are buffered in memory: stream entry points are bounded reads, not a constant-memory parser. Choose limits and worker memory/time budgets appropriate to your workload. Zero limits are supported; negative limits are rejected.
+CFB chains and directory trees are checked for cycles and invalid indexes. RTF decompression verifies its size and checksum. MIME container depth is capped at 64 and RTF group depth at 256. Input and output objects are buffered in memory: stream entry points are bounded reads, not a constant-memory parser. Temporary MIME graph cycles are collected before each parse returns or throws, so batches and queue workers do not retain previous input/body buffers. Output objects still retain their own input and attachment bytes until the caller releases them. Choose limits and worker memory/time budgets appropriate to your workload. Zero limits are supported; negative limits are rejected.
 
 Recoverable warning codes currently include `missing_body`, `unsupported_attachment`, `unknown_code_page`, `missing_recipient_address`, `unresolved_exchange_address`, `unsupported_message_class` and `invalid_content_type`. Warnings from nested messages are included in the root result. Unsupported external/OLE attachment methods are explicitly reported and omitted from extracted attachments. Missing bodies do not hide supported attachments.
 

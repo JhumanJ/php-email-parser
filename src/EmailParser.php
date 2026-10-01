@@ -17,8 +17,14 @@ final class EmailParser
         ParseContext::limit(strlen($bytes), $this->options->maxInputBytes, 'Input bytes');
         $format ??= str_starts_with($bytes, CompoundFile::SIGNATURE) ? Format::MSG : Format::EML;
         $context = new ParseContext($this->options);
-        $message = $format === Format::MSG ? (new MsgParser())->parse($bytes, $context) : (new EmlParser())->parse($bytes, $context);
-        return new ParseResult($message, $context->warnings);
+        try {
+            $message = $format === Format::MSG ? (new MsgParser())->parse($bytes, $context) : (new EmlParser())->parse($bytes, $context);
+            return new ParseResult($message, $context->warnings);
+        } finally {
+            // MIME parts, stream proxies and observers form reference cycles.
+            // Release their temporary buffers between batch/worker parses.
+            gc_collect_cycles();
+        }
     }
     public function parseFile(string $path, ?Format $format = null): ParseResult
     {
