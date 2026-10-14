@@ -18,6 +18,7 @@ final class EmlExporter
     {
         try {
             $headers = new Headers();
+            $emptyReturnPaths = '';
             foreach (['from' => 'From','to' => 'To','cc' => 'Cc','bcc' => 'Bcc','replyTo' => 'Reply-To'] as $property => $name) {
                 if ($email->$property !== []) {
                     $headers->addMailboxListHeader($name, array_map(fn ($a) => new Address($a->address, $a->name ?? ''), $email->$property));
@@ -37,7 +38,18 @@ final class EmlExporter
             foreach ($email->headers as $name => $values) {
                 if (!in_array(strtolower($name), $excluded, true)) {
                     foreach ($values as $value) {
-                        $headers->addTextHeader($name, $value);
+                        if (strtolower($name) === 'return-path') {
+                            if (in_array(trim($value), ['', '<>'], true)) {
+                                // Symfony PathHeader requires a non-empty mailbox; bounces use an empty path.
+                                $emptyReturnPaths .= "Return-Path: <>\r\n";
+                            } else {
+                                $headers->addPathHeader($name, Address::create($value));
+                            }
+                        } elseif (strtolower($name) === 'sender') {
+                            $headers->addMailboxHeader($name, $value);
+                        } else {
+                            $headers->addTextHeader($name, $value);
+                        }
                     }
                 }
             }
@@ -64,7 +76,7 @@ final class EmlExporter
                 $body = new MixedPart(...$parts);
             }
             // Archive serialization: retain Bcc, dates and IDs instead of preparing a message for sending.
-            return $headers->toString().$body->toString();
+            return $emptyReturnPaths.$headers->toString().$body->toString();
         } catch (\InvalidArgumentException|\Symfony\Component\Mime\Exception\ExceptionInterface $e) {
             throw new InvalidEmailException('Unable to serialize email: '.$e->getMessage(), 0, $e);
         }

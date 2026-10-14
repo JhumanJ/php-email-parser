@@ -105,9 +105,9 @@ def rtf(raw, compressed=False):
     return pack('<IIII',len(payload)+12,len(raw),0x75465a4c,crc)+payload
 
 
-def basic(context='root', ansi=False, bodies=True):
+def basic(context='root', ansi=False, bodies=True, headers=HEADERS):
     strings = {0x0037:'Facture été',0x0c1a:'Équipe facturation',0x0c1f:'billing@example.com',
-               0x0c1e:'SMTP',0x5d01:'billing@example.com',0x007d:HEADERS,0x1035:'<fixture@example.com>'}
+               0x0c1e:'SMTP',0x5d01:'billing@example.com',0x007d:headers,0x1035:'<fixture@example.com>'}
     if bodies: strings[0x1000] = 'Bonjour été €' if ansi else 'Bonjour été'
     tree = properties(strings, {0x1013:'<html><p>Bonjour été</p></html>'.encode()} if bodies else {},
                       {0x3ffd:(3,1252 if ansi else 65001)},context,ansi)
@@ -148,6 +148,13 @@ def main():
     attach['__substg1.0_3701000D']=basic(context='embedded')
     nested['__attach_version1.0_#00000000']=attach
     (OUT/'nested.msg').write_bytes(cfb(nested))
+    transport_headers = 'Return-Path: <bounce@example.com>\r\nSender: Sender Name <sender@example.com>\r\n' + HEADERS
+    embedded = basic(context='embedded', headers=transport_headers)
+    transport_nested = properties({0x0037:'Forward with transport headers',0x1000:'See attached.'})
+    transport_attach = properties({0x3707:'forwarded.msg'},fixed={0x3705:(3,5)},context='other')
+    transport_attach['__substg1.0_3701000D'] = embedded
+    transport_nested['__attach_version1.0_#00000000'] = transport_attach
+    (OUT/'nested-transport-headers.msg').write_bytes(cfb(transport_nested))
     unsupported=basic(); unsupported['__attach_version1.0_#00000000']=properties({0x3707:'external.doc'},{},{0x3705:(3,2)},'other')
     (OUT/'unsupported-attachment.msg').write_bytes(cfb(unsupported))
     data=(OUT/'basic.msg').read_bytes(); (OUT/'truncated.msg').write_bytes(data[:100])
