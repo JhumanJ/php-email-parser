@@ -77,12 +77,12 @@ def cfb(tree, version=3):
     return bytes(header)+b''.join(sectors)
 
 
-def properties(strings=None, binary=None, fixed=None, context='root', ansi=False):
+def properties(strings=None, binary=None, fixed=None, context='root', ansi=False, codepage='cp1252'):
     strings, binary, fixed = strings or {}, binary or {}, fixed or {}
     tree = {}; records = bytearray()
     for prop, text in strings.items():
         typ = 0x001e if ansi else 0x001f
-        data = (text+'\0').encode('cp1252' if ansi else 'utf-16le')
+        data = (text+'\0').encode(codepage if ansi else 'utf-16le')
         tree[f'__substg1.0_{prop:04X}{typ:04X}'] = data
         records.extend(pack('<IIII', prop<<16|typ, 6, len(data), 0))
     for prop, data in binary.items():
@@ -105,9 +105,9 @@ def rtf(raw, compressed=False):
     return pack('<IIII',len(payload)+12,len(raw),0x75465a4c,crc)+payload
 
 
-def basic(context='root', ansi=False, bodies=True):
+def basic(context='root', ansi=False, bodies=True, headers=HEADERS):
     strings = {0x0037:'Facture été',0x0c1a:'Équipe facturation',0x0c1f:'billing@example.com',
-               0x0c1e:'SMTP',0x5d01:'billing@example.com',0x007d:HEADERS,0x1035:'<fixture@example.com>'}
+               0x0c1e:'SMTP',0x5d01:'billing@example.com',0x007d:headers,0x1035:'<fixture@example.com>'}
     if bodies: strings[0x1000] = 'Bonjour été €' if ansi else 'Bonjour été'
     tree = properties(strings, {0x1013:'<html><p>Bonjour été</p></html>'.encode()} if bodies else {},
                       {0x3ffd:(3,1252 if ansi else 65001)},context,ansi)
@@ -148,6 +148,13 @@ def main():
     attach['__substg1.0_3701000D']=basic(context='embedded')
     nested['__attach_version1.0_#00000000']=attach
     (OUT/'nested.msg').write_bytes(cfb(nested))
+    transport_headers = 'Return-Path: <bounce@example.com>\r\nSender: Sender Name <sender@example.com>\r\n' + HEADERS
+    embedded = basic(context='embedded', headers=transport_headers)
+    transport_nested = properties({0x0037:'Forward with transport headers',0x1000:'See attached.'})
+    transport_attach = properties({0x3707:'forwarded.msg'},fixed={0x3705:(3,5)},context='other')
+    transport_attach['__substg1.0_3701000D'] = embedded
+    transport_nested['__attach_version1.0_#00000000'] = transport_attach
+    (OUT/'nested-transport-headers.msg').write_bytes(cfb(transport_nested))
     unsupported=basic(); unsupported['__attach_version1.0_#00000000']=properties({0x3707:'external.doc'},{},{0x3705:(3,2)},'other')
     (OUT/'unsupported-attachment.msg').write_bytes(cfb(unsupported))
     data=(OUT/'basic.msg').read_bytes(); (OUT/'truncated.msg').write_bytes(data[:100])
@@ -179,6 +186,12 @@ def main():
     (OUT/'rtf-reference.msg').write_bytes(cfb(properties({0x0037:'reference'},{0x1009:compressed})))
     unknown=properties({0x0037:'Unknown code page',0x1000:'Readable'},fixed={0x3ffd:(3,99999)})
     (OUT/'unknown-code-page.msg').write_bytes(cfb(unknown))
+    vietnamese = properties({0x0037:'Thơ',0x1000:'Thơ'}, {0x1013:'<p>Thơ</p>'.encode('cp1258')}, fixed={0x3ffd:(3,1258)}, ansi=True, codepage='cp1258')
+    vietnamese['__attach_version1.0_#00000000'] = properties({0x3707:'fixture.pdf',0x370e:'application/pdf'}, {0x3701:PDF}, {0x3705:(3,1)}, context='other')
+    (OUT/'code-page-1258.msg').write_bytes(cfb(vietnamese))
+    (OUT/'rtf-code-page-1258.msg').write_bytes(cfb(properties({0x0037:'Vietnamese RTF'}, {0x1009:rtf(br"{\rtf1\ansi\ansicpg1258 Th\'f5}")})))
+    zero = properties({0x0037:'Thơ',0x1000:'Thơ'}, fixed={0x3ffd:(3,0),0x3fde:(3,1258)}, ansi=True, codepage='cp1258')
+    (OUT/'zero-message-code-page.msg').write_bytes(cfb(zero))
     (OUT/'empty.eml').write_bytes(b''); (OUT/'garbage.eml').write_bytes(b'not an email')
 
 if __name__=='__main__': main()

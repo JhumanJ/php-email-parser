@@ -152,7 +152,7 @@ final class RtfDecoder
                     $literal = substr($literal, $skip);
                     $fallback -= $skip;
                 }
-                self::append($output, $state, $fallback, $html, $context, mb_convert_encoding($literal, 'UTF-8', $state['cp']));
+                self::append($output, $state, $fallback, $html, $context, TextEncoding::decode($literal, $state['cp']));
                 continue;
             }
             if ($i >= $length) {
@@ -179,7 +179,7 @@ final class RtfDecoder
                     $literal = substr($literal, $skip);
                     $fallback -= $skip;
                 }
-                self::append($output, $state, $fallback, $html, $context, mb_convert_encoding($literal, 'UTF-8', $state['cp']));
+                self::append($output, $state, $fallback, $html, $context, TextEncoding::decode($literal, $state['cp']));
                 continue;
             }
             if ($symbol === '*') {
@@ -270,9 +270,9 @@ final class RtfDecoder
             65001 => 'UTF-8',1200 => 'UTF-16LE',20127 => 'ASCII',28591 => 'ISO-8859-1', 28592 => 'ISO-8859-2', 28595 => 'ISO-8859-5', 28599 => 'ISO-8859-9', 28605 => 'ISO-8859-15', 20866 => 'KOI8-R', 21866 => 'KOI8-U', 65000 => 'UTF-7',932 => 'SJIS',936 => 'GBK',949 => 'CP949',950 => 'BIG-5', default => 'Windows-'.$codePage
         };
         try {
-            mb_convert_encoding('', 'UTF-8', $encoding);
+            TextEncoding::decode('', $encoding);
             return $encoding;
-        } catch (\ValueError) {
+        } catch (InvalidEmailException) {
             $context->warning('unknown_code_page', 'Unknown code page '.$codePage.'; falling back to Windows-1252.');
             return 'Windows-1252';
         }
