@@ -101,6 +101,8 @@ CFB chains and directory trees are checked for cycles and invalid indexes. RTF d
 
 Recoverable warning codes currently include `missing_body`, `unsupported_attachment`, `unknown_code_page`, `missing_recipient_address`, `unresolved_exchange_address`, `unsupported_message_class` and `invalid_content_type`. Warnings from nested messages are included in the root result. Unsupported external/OLE attachment methods are explicitly reported and omitted from extracted attachments. Missing bodies do not hide supported attachments.
 
+Declared Windows code pages use mbstring or iconv, including Windows-1258 for ANSI, HTML and RTF bodies. A zero message code page uses an explicit Internet code page when available. A genuinely unknown or unspecified code page still produces `unknown_code_page` and uses the existing Windows-1252 fallback; strict mode continues to reject that warning. Iconv conversions never discard undecodable bytes.
+
 ## Supported scope
 
 | Feature | EML | MSG |

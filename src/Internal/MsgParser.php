@@ -67,7 +67,7 @@ final class MsgParser
         }
         $text = $p->string(0x1000);
         $htmlRaw = $p->binary(0x1013, $context->options->maxBodyBytes);
-        $html = $htmlRaw === null ? $p->string(0x1013) : rtrim(mb_convert_encoding($htmlRaw, 'UTF-8', mb_check_encoding($htmlRaw, 'UTF-8') ? 'UTF-8' : $p->encoding), "\0");
+        $html = $htmlRaw === null ? $p->string(0x1013) : rtrim(TextEncoding::decode($htmlRaw, mb_check_encoding($htmlRaw, 'UTF-8') ? 'UTF-8' : $p->encoding), "\0");
         if ($text === null || $html === null) {
             $rtf = $p->binary(0x1009, $context->options->maxInputBytes);
             if ($rtf !== null) {

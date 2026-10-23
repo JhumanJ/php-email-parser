@@ -30,7 +30,11 @@ final class MsgProperties
         } elseif (!$other) {
             throw new InvalidEmailException('Missing MSG property table.');
         }
-        $this->encoding = $encoding ?? RtfDecoder::codePage($this->integer(0x3FFD) ?? $this->integer(0x3FDE) ?? 1252, $context);
+        $codePage = $this->integer(0x3FFD);
+        if ($codePage === null || $codePage === 0) {
+            $codePage = $this->integer(0x3FDE) ?? $codePage ?? 1252;
+        }
+        $this->encoding = $encoding ?? RtfDecoder::codePage($codePage, $context);
     }
     public function string(int $property): ?string
     {
@@ -44,7 +48,7 @@ final class MsgProperties
                     }
                     $raw = mb_convert_encoding($raw, 'UTF-8', 'UTF-16LE');
                 } else {
-                    $raw = mb_convert_encoding($raw, 'UTF-8', $this->encoding);
+                    $raw = TextEncoding::decode($raw, $this->encoding);
                 }
                 $raw = rtrim($raw, "\0");
                 $this->context->body($raw);
